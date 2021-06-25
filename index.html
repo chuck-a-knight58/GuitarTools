@@ -226,7 +226,7 @@
           console.log($fretboard.data("api").getClickedNotes());
         };
 
-        // Set up the frretboard via its options
+        // Set up the fretboard via its options
         var options = {
           tuning: tuning,
           numFrets: numFrets,
@@ -242,6 +242,7 @@
           notesClickedCallback: clickedNotesChangedFunc,
         };
         var $fretboard = $(".my-fretboard-js");
+        console.log(options)
         $fretboard.fretboard(options);
         var api = $fretboard.data("api");
 

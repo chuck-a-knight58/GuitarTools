@@ -33,14 +33,116 @@
 
     <script type="text/javascript">
 
-      NOTES = ["C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B"];
-
-      SCALES = [
-        "minor pentatonic",
+      NOTES = [
+        ["C"],
+        ["C#", "Db"],
+        ["D"],
+        ["D#", "Eb"],
+        ["E"],
+        ["F"],
+        ["F#", "Gb"],
+        ["G"],
+        ["G#", "Ab"],
+        ["A"],
+        ["A#", "Bb"],
+        ["B"],
       ];
       
+      SCALES = [
+        "minor",
+        "minor pentatonic",
+        "major",
+        "major pentatonic",
+        "lydian"
+      ];
+      
+      MAJOR_PATTERN =  ["W", "W", "H", "W", "W", "W" ]
+      LYDIAN_PATTERN = ["W", "W", "W", "H", "W", "W" ]
+      MINOR_PATTERN =  ["W", "H", "W", "W", "H", "W" ]
+
+      // Rotate the given scale until it's root note (first note) is the specified root
+      function rebase_notes(root, notes) {
+        _notes = [...notes];
+        while (!_notes[0].includes(root)) {
+          _notes.push(_notes.shift());
+        }
+        return _notes;
+      }
+
+      // Filter notes from a list based on scale pattern
+      function filter_notes_by_pattern(pattern, notes) {
+        _notes = [];
+        _index = 0;
+        _notes.push(notes[_index]);
+        pattern.forEach(function (_step) {
+          if (_step == "W") {
+            _index += 2;
+          } else if (_step == "H") {
+            _index += 1;
+          }
+          _notes.push(notes[_index]);          
+        });
+        return _notes;
+      }
+
+      // Filter notes from a list based on their index
+      function filter_notes_by_indicies(indicies, notes) {
+        _notes = [...notes];
+        indicies.sort((a, b) => b - a); // Reverse order for deletion
+        indicies.forEach(function (_index) {
+          _notes.splice(_index, 1);
+        });
+        return _notes;
+      }
+
+      // Fix the note spelling within the note array
+      function fix_spelling(notes) {
+        _last_note = "";
+        _notes = []
+        notes.forEach(function (_note) {
+          if (_note.length == 1) {
+            _notes.push(_note[0]);
+            _last_note = _note[0].charAt(0);
+          } else {
+            if (_last_note == _note[0].charAt(0)) {
+              _notes.push(_note[1]);
+              _last_note = _note[1].charAt(0);
+            } else {
+              _notes.push(_note[0]);
+              _last_note = _note[0].charAt(0);
+            }
+          }
+        });
+        return _notes;
+      }
+
+      // Get the notes of the specifed rooted scale type
       function getScaleNotes(root, scale) {
-        return ["C", "Eb", "F", "G", "Bb"];
+        if (scale == 'minor') {
+          return fix_spelling(
+                 filter_notes_by_pattern(MINOR_PATTERN, 
+                 rebase_notes(root, NOTES)));
+        } else if (scale == 'major') {
+          return fix_spelling(
+                 filter_notes_by_pattern(MAJOR_PATTERN, 
+                 rebase_notes(root, NOTES)));
+        } else if (scale == 'lydian') {
+          return fix_spelling(
+                 filter_notes_by_pattern(LYDIAN_PATTERN, 
+                 rebase_notes(root, NOTES)));
+        } else if (scale == 'minor pentatonic') {
+          return fix_spelling(
+                 filter_notes_by_indicies([1, 5], // 2 & 6
+                 filter_notes_by_pattern(MINOR_PATTERN, 
+                 rebase_notes(root, NOTES))));
+        } else if (scale == 'major pentatonic') {
+          return fix_spelling(
+                 filter_notes_by_indicies([3, 6], // 4 & 7
+                 filter_notes_by_pattern(MAJOR_PATTERN, 
+                 rebase_notes(root, NOTES))));
+        } else {
+          console.log('Unknown scale selected');
+        }
       }
 
       // Determine which notes on the fretboard match the notes in our scale
@@ -177,7 +279,7 @@
       // Initialize the app
       (function ($) {
         // Triad implements the music theory. Use it to determine the cord
-        var root = NOTES[0];
+        var root = NOTES[0][0];
         var scale = SCALES[0];
         var isChordMode = false;
         var isDisabled = true;
@@ -231,7 +333,7 @@
           console.log($fretboard.data("api").getClickedNotes());
         };
 
-        // Set up the frretboard via its options
+        // Set up the fretboard via its options
         var options = {
           tuning: tuning,
           numFrets: numFrets,
@@ -247,6 +349,7 @@
           notesClickedCallback: clickedNotesChangedFunc,
         };
         var $fretboard = $(".my-fretboard-js");
+        console.log(options)
         $fretboard.fretboard(options);
         var api = $fretboard.data("api");
 
@@ -309,7 +412,7 @@
         // Populate the root note selector
         var selectRootNote = document.getElementById("selectRootNote");
         for (var i = 0; i < NOTES.length; i++) {
-          var opt = NOTES[i];
+          var opt = NOTES[i][0];
           var el = document.createElement("option");
           el.textContent = opt;
           el.value = opt;
