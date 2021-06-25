@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <title>Fretboard Page</title>
+    <meta name="viewport" content="initial-scale=1" />
+    <script src="./fretboard/jquery.js"></script>
+    <script src="./fretboard/fretboard.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="./fretboard/styles.css" />
+    <link rel="stylesheet" type="text/css" href="./styles.css" />
+
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="my-fretboard-js"></div>
+
+      <div class="my-controlpanel-js">
+        <div class="horizontal-group">
+          <label for="tuning">Tuning: </label>
+          <input type="text" id="tuning" name="tuning" required minlength="6" maxlength="6" size="10" value="EADGBE" />
+          <button id="change-tuning" class="change-tuning">Set Tuning</button>
+        </div>
+        <div class="horizontal-group">
+          <label for="root">Root: </label>
+          <select id="selectRootNote"> </select>
+          <select id="selectScale"> </select>
+          <label id="notes">notes</label>
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+
+      NOTES = ["C", "C#", "Db", "D", "D#", "Eb", "E", "F", "F#", "Gb", "G", "G#", "Ab", "A", "A#", "Bb", "B"];
+
+      SCALES = [
+        "minor pentatonic",
+      ];
+      
+      function getScaleNotes(root, scale) {
+        return ["C", "Eb", "F", "G", "Bb"];
+      }
+
+      // Determine which notes on the fretboard match the notes in our scale
+      function determineNotesToClick(api, note_list) {
+        var notesToClick = [];
+        all = api.getAllNotes();
+        all.forEach(function (noteGroup) {
+          notes = [];
+          noteGroup.notes.forEach(function (note) {
+            // Handle A#/Bb etc.
+            var noteLetters = note.letter.split("/");
+            noteLetters.forEach(function (letter) {
+              if ($.inArray(letter, note_list) >= 0) {
+                notes.push({
+                  fret: note.fret,
+                  cssClass: "blue",
+                });
+              }
+            });
+          });
+          if (notes.length > 0) {
+            notesToClick.push({
+              string: {
+                letter: noteGroup.string.letter,
+                octave: noteGroup.string.octave,
+              },
+              notes: notes,
+            });
+          }
+        });
+
+        return notesToClick;
+      }
+       
+      // Reset the fretboard and set the header notes to grey
+      function clear_fretboard(api, tuning) {
+        api.clearClickedNotes();
+
+        var baseNotes = [
+          {
+            string: {
+              letter: tuning[0].letter,
+              octave: tuning[0].octave,
+            },
+            notes: [
+              {
+                fret: 0,
+                cssClass: "grey",
+              },
+            ],
+          },
+          {
+            string: {
+              letter: tuning[1].letter,
+              octave: tuning[1].octave,
+            },
+            notes: [
+              {
+                fret: 0,
+                cssClass: "grey",
+              },
+            ],
+          },
+          {
+            string: {
+              letter: tuning[2].letter,
+              octave: tuning[2].octave,
+            },
+            notes: [
+              {
+                fret: 0,
+                cssClass: "grey",
+              },
+            ],
+          },
+          {
+            string: {
+              letter: tuning[3].letter,
+              octave: tuning[3].octave,
+            },
+            notes: [
+              {
+                fret: 0,
+                cssClass: "grey",
+              },
+            ],
+          },
+          {
+            string: {
+              letter: tuning[4].letter,
+              octave: tuning[4].octave,
+            },
+            notes: [
+              {
+                fret: 0,
+                cssClass: "grey",
+              },
+            ],
+          },
+          {
+            string: {
+              letter: tuning[5].letter,
+              octave: tuning[5].octave,
+            },
+            notes: [
+              {
+                fret: 0,
+                cssClass: "grey",
+              },
+            ],
+          },
+        ];
+
+        api.setClickedNotes(baseNotes);
+      }
+
+      // Update the fretboard given the root note, scale and tuning
+      function updateFretboard(api, root, scale, tuning) {
+        clear_fretboard(api, tuning);
+
+        // Use the root node and selected scale todetermine note_list
+        note_list = getScaleNotes(root, scale);
+
+        // Determine which notes on the fretboard match the notes in our chord
+        notesToClick = determineNotesToClick(api, note_list)
+
+        // Update the notes making up the note_list
+        $("#notes")[0].innerText = note_list.toString();
+
+        // Set the selected notes on the fretboard
+        api.setClickedNotes(notesToClick);
+      }
+
+      // Initialize the app
+      (function ($) {
+        // Triad implements the music theory. Use it to determine the cord
+        var root = NOTES[0];
+        var scale = SCALES[0];
+        var isChordMode = false;
+        var isDisabled = true;
+        var noteLetters = ["C", "C#/Db", "D", "D#/Eb", "E", "F", "F#/Gb", "G", "Ab/G#", "A", "A#/Bb", "B"];
+        var tuning = [
+          {
+            letter: "E",
+            octave: 4,
+          },
+          {
+            letter: "B",
+            octave: 3,
+          },
+          {
+            letter: "G",
+            octave: 3,
+          },
+          {
+            letter: "D",
+            octave: 3,
+          },
+          {
+            letter: "A",
+            octave: 2,
+          },
+          {
+            letter: "E",
+            octave: 2,
+          },
+        ];
+        var numFrets = 16;
+        var dimensionsFunc = function ($fretboardContainer, $fretboardBody, settings) {
+          var width = $(window).width();
+          var height;
+
+          if (width <= 768) {
+            height = settings.tuning.length * 26;
+          } else {
+            height = settings.tuning.length * 32;
+          }
+
+          return {
+            height: height,
+          };
+        };
+        var noteCircles = [3, 5, 7, 9, 12, 15, 17, 19, 21, 24];
+        var intervals = ["1", "b2", "2", "b3", "3", "4", "b5", "5", "b6", "6", "b7", "7"];
+        var animationSpeed = 400; // ms
+        var noteMode = "letter"; // or "interval"
+        var clickedNotesChangedFunc = function () {
+          console.log($fretboard.data("api").getClickedNotes());
+        };
+
+        // Set up the frretboard via its options
+        var options = {
+          tuning: tuning,
+          numFrets: numFrets,
+          isChordMode: isChordMode,
+          noteClickingDisabled: isDisabled,
+          noteLetters: noteLetters,
+          noteMode: noteMode,
+          intervals: intervals,
+          root: root,
+          animationSpeed: animationSpeed,
+          noteCircles: noteCircles,
+          dimensionsFunc: dimensionsFunc,
+          notesClickedCallback: clickedNotesChangedFunc,
+        };
+        var $fretboard = $(".my-fretboard-js");
+        $fretboard.fretboard(options);
+        var api = $fretboard.data("api");
+
+        // Set the fretboard tuning according to #tuning
+        $(".change-tuning").on("click", function () {
+          var t = $("#tuning").val();
+
+          tuning = [
+            {
+              letter: t[5],
+              octave: 4,
+            },
+            {
+              letter: t[4],
+              octave: 3,
+            },
+            {
+              letter: t[3],
+              octave: 3,
+            },
+            {
+              letter: t[2],
+              octave: 3,
+            },
+            {
+              letter: t[1],
+              octave: 2,
+            },
+            {
+              letter: t[0],
+              octave: 2,
+            },
+          ];
+
+          api.setTuning($.extend(true, [], tuning));
+        });
+
+        // Add handler to update the fretboard based on root note selection
+        $("#selectRootNote").on("change", function () {
+          var selector = $("#selectRootNote");
+          var index = selector[0].selectedIndex;
+          if (index != -1) {
+            root = selector[0].options[index].text;
+          }
+          updateFretboard(api, root, scale, tuning);
+          console.log("Updated selectRootNote");
+        });
+
+        // Add handler to update the fretboard based on chord scale selection
+        $("#selectScale").on("change", function () {
+          var selector = $("#selectScale");
+          var index = selector[0].selectedIndex;
+          if (index != -1) {
+            scale = selector[0].options[index].text;
+          }
+          updateFretboard(api, root, scale, tuning);
+          console.log("Updated selectScale");
+        });
+
+        // Populate the root note selector
+        var selectRootNote = document.getElementById("selectRootNote");
+        for (var i = 0; i < NOTES.length; i++) {
+          var opt = NOTES[i];
+          var el = document.createElement("option");
+          el.textContent = opt;
+          el.value = opt;
+          selectRootNote.appendChild(el);
+        }
+        $(".selectRootNote").value = root;
+
+        // Populate the scale selector
+        var selectScale = document.getElementById("selectScale");
+        for (var i = 0; i < SCALES.length; i++) {
+          var opt = SCALES[i];
+          var el = document.createElement("option");
+          el.textContent = opt;
+          el.value = opt;
+          selectScale.appendChild(el);
+        }
+        $(".selectScale").value = scale;
+
+        api.setNoteClickingDisabled(isDisabled);
+
+        // Update the fretboard
+        updateFretboard(api, root, scale, tuning);
+      })(jQuery);
+    </script>
+  </body>
+</html>
