@@ -27,6 +27,7 @@
           <select id="selectRootNote"> </select>
           <select id="selectScale"> </select>
           <label id="notes">notes</label>
+          <label id="intervals">intervals</label>
         </div>
       </div>
     </div>
@@ -47,30 +48,20 @@
         ["A#", "Bb"],
         ["B"],
       ];
-      
-      SCALES = [
-        "minor",
-        "minor pentatonic",
-        "major",
-        "major pentatonic",
-        "lydian",
-        "blues"
-      ];
-      
+            
       MAJOR_PATTERN =  [ "W", "W", "H", "W", "W", "W" ];
-      LYDIAN_PATTERN = [ "W", "W", "W", "H", "W", "W" ];
-      MINOR_PATTERN =  [ "W", "H", "W", "W", "H", "W" ];
-      BLUES_PATTERN =  [ "WH", "W", "H", "H", "WH" ];
-      // Major 1, 2, 3, 4, 5, 6, 7, 8
-      // Dorian 1, 2, ♭3, 4, 5, 6, ♭7, 8
-      // Phrygian
-      // Mixolydian
-      // Aeolian (natural minor)
-      // Locrian
-      // Blues (add a flatted 5th to a minor pentatonic)
 
-
-
+      SCALES = {
+        "major":            "1-2-3-4-5-6-7",
+        "minor":            "1-2-3b-4-5-6b-7b",
+        "major pentatonic": "1-2-3-5-6",
+        "minor pentatonic": "1-3b-4-5-7b",
+        "lydian":           "1-2-3-4#-5-6-7",
+        "dorian":           "1-2-3b-4-5-6-7b",
+        "blues":            "1-3b-4-5b-5-7b",
+      };
+      //A, C, D, E, and G
+      //1-3b-4-5-7b
       // Rotate the given scale until it's root note (first note) is the specified root
       function rebase_notes(root, notes) {
         _notes = [...notes];
@@ -81,7 +72,7 @@
       }
 
       // Filter notes from a list based on scale pattern
-      function filter_notes_by_pattern(pattern, notes) {
+      function create_major_scale(pattern, notes) {
         _notes = [];
         _index = 0;
         _notes.push(notes[_index]);
@@ -90,21 +81,74 @@
             _index += 2;
           } else if (_step == "H") {
             _index += 1;
-          } else if (_step == "WH") {
-            _index += 3;
           }
-          _notes.push(notes[_index]);          
+          n = notes[_index];
+          _notes.push(n);          
         });
+        console.log(JSON.stringify(_notes) + " <-- function create_major_scale(" + JSON.stringify(pattern) + ", " + JSON.stringify(notes) + ")");
         return _notes;
       }
 
-      // Filter notes from a list based on their index
-      function filter_notes_by_indicies(indicies, notes) {
-        _notes = [...notes];
-        indicies.sort((a, b) => b - a); // Reverse order for deletion
-        indicies.forEach(function (_index) {
-          _notes.splice(_index, 1);
+      function flat(note) {
+        index = 0;
+        for (; index < NOTES.length; index++) {
+          if (NOTES[index].includes(note[0])) {
+            break;
+          }
+        }
+        if (index >= NOTES.length) {
+          alert("Failure to flat note")
+        }
+        if (index == 0) {
+          index = NOTES.length - 1;
+        } else {
+          index = index - 1;
+        }
+        new_note = NOTES[index];
+        console.log(JSON.stringify(new_note) + " <-- function flat(" + JSON.stringify(note) + ")");
+        return new_note;
+      }
+
+      function sharp(note) {
+        index = 0;
+        for (; index < NOTES.length; index++) {
+          if (NOTES[index].includes(note[0])) {
+            break;
+          }
+        }
+        if (index >= NOTES.length) {
+          alert("Failure to flat note")
+        }
+        if (index == NOTES.length-1) {
+          index = 0;
+        } else {
+          index = index + 1;          
+        }
+        new_note = NOTES[index];
+        console.log(JSON.stringify(new_note) + " <-- function sharp(" + JSON.stringify(note) + ")");
+        return new_note;
+      }
+
+      // Filter notes from a list based on the intervals required
+      function select_by_intervals(intervals, notes) {
+        _notes = [];
+        _intervals = intervals.split("-");
+        _intervals.forEach(function(interval) {
+          index = parseInt(interval.charAt(0));
+          note = notes[index-1];
+          if (interval.length > 1) {
+            modifier = interval.charAt(1);
+            if (modifier == "b") {
+              note = flat(note);
+            } else if (modifier == "#") {
+              note = sharp(note)
+            } else {
+              alert("Unknown interval modifier")
+            }
+          }
+          _notes.push(note);
         });
+        console.log(JSON.stringify(_notes) + " <-- function select_by_intervals(" + JSON.stringify(intervals) + ", " + JSON.stringify(notes) + ")");
         return _notes;
       }
 
@@ -126,44 +170,24 @@
             }
           }
         });
+        console.log(JSON.stringify(_notes) + " <-- function fix_spelling(" + JSON.stringify(notes) + ")");
         return _notes;
       }
 
       // Get the notes of the specifed rooted scale type
       function getScaleNotes(root, scale) {
-        if (scale == 'minor') {
-          return fix_spelling(
-                 filter_notes_by_pattern(MINOR_PATTERN, 
-                 rebase_notes(root, NOTES)));
-        } else if (scale == 'major') {
-          return fix_spelling(
-                 filter_notes_by_pattern(MAJOR_PATTERN, 
-                 rebase_notes(root, NOTES)));
-        } else if (scale == 'lydian') {
-          return fix_spelling(
-                 filter_notes_by_pattern(LYDIAN_PATTERN, 
-                 rebase_notes(root, NOTES)));
-        } else if (scale == 'minor pentatonic') {
-          return fix_spelling(
-                 filter_notes_by_indicies([1, 5], // 2 & 6
-                 filter_notes_by_pattern(MINOR_PATTERN, 
-                 rebase_notes(root, NOTES))));
-        } else if (scale == 'major pentatonic') {
-          return fix_spelling(
-                 filter_notes_by_indicies([3, 6], // 4 & 7
-                 filter_notes_by_pattern(MAJOR_PATTERN, 
-                 rebase_notes(root, NOTES))));
-        } else if (scale == 'blues') {
-          return fix_spelling(
-                 filter_notes_by_pattern(BLUES_PATTERN, 
-                 rebase_notes(root, NOTES)));
-        } else {
-          console.log('Unknown scale selected');
-        }
+        return fix_spelling(
+                 select_by_intervals(
+                   SCALES[scale],
+                   create_major_scale(
+                     MAJOR_PATTERN, 
+                     rebase_notes(
+                       root, 
+                       NOTES))));
       }
 
       // Determine which notes on the fretboard match the notes in our scale
-      function determineNotesToClick(api, root, note_list) {
+      function determineNotesToClick(api, root, note_list, scale) {
         var notesToClick = [];
         all = api.getAllNotes();
         all.forEach(function (noteGroup) {
@@ -173,9 +197,12 @@
             var noteLetters = note.letter.split("/");
             noteLetters.forEach(function (letter) {
               if ($.inArray(letter, note_list) >= 0) {
-                note_color = 'blue';
+                note_color = 'black';
                 if (root == letter) {
-                  note_color = 'green';
+                  note_color = 'red';
+                }
+                if ((scale == "blues") && (note_list[3] == letter)) {
+                  note_color = "blue"
                 }
                 notes.push({
                   fret: note.fret,
@@ -288,10 +315,11 @@
         note_list = getScaleNotes(root, scale);
 
         // Determine which notes on the fretboard match the notes in our list
-        notesToClick = determineNotesToClick(api, root, note_list)
+        notesToClick = determineNotesToClick(api, root, note_list, scale)
 
         // Update the notes making up the note_list
         $("#notes")[0].innerText = note_list.toString();
+        $("#intervals")[0].innerText = SCALES[scale];
 
         // Set the selected notes on the fretboard
         api.setClickedNotes(notesToClick);
@@ -301,7 +329,7 @@
       (function ($) {
         // Triad implements the music theory. Use it to determine the cord
         var root = NOTES[0][0];
-        var scale = SCALES[0];
+        var scale = "major";
         var isChordMode = false;
         var isDisabled = true;
         var noteLetters = ["C", "C#/Db", "D", "D#/Eb", "E", "F", "F#/Gb", "G", "Ab/G#", "A", "A#/Bb", "B"];
@@ -443,8 +471,8 @@
 
         // Populate the scale selector
         var selectScale = document.getElementById("selectScale");
-        for (var i = 0; i < SCALES.length; i++) {
-          var opt = SCALES[i];
+        for (const scale_key in SCALES) {
+          var opt = scale_key;
           var el = document.createElement("option");
           el.textContent = opt;
           el.value = opt;
