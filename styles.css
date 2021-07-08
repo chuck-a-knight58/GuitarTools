@@ -5,6 +5,13 @@
   align-items: center;
 }
 
+.vertical-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 .disclaimer {
   text-align: center;
 }

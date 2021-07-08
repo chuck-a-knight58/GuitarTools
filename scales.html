@@ -2,32 +2,40 @@
 
 <html>
   <head>
-    <title>Fretboard Page</title>
+    <title>Guitar Scale Visualization</title>
     <meta name="viewport" content="initial-scale=1" />
     <script src="./fretboard/jquery.js"></script>
     <script src="./fretboard/fretboard.js"></script>
 
     <link rel="stylesheet" type="text/css" href="./fretboard/styles.css" />
     <link rel="stylesheet" type="text/css" href="./styles.css" />
-
+    <h1>Guitar Scale Visualization</h1>
   </head>
 
   <body>
     <div class="container">
       <div class="my-fretboard-js"></div>
-
+      <br>
       <div class="my-controlpanel-js">
         <div class="horizontal-group">
           <label for="tuning">Tuning: </label>
           <input type="text" id="tuning" name="tuning" required minlength="6" maxlength="6" size="10" value="EADGBE" />
           <button id="change-tuning" class="change-tuning">Set Tuning</button>
         </div>
-        <div class="horizontal-group">
-          <label for="root">Root: </label>
-          <select id="selectRootNote"> </select>
-          <select id="selectScale"> </select>
-          <label id="notes">notes</label>
-          <label id="intervals">intervals</label>
+        <div class="vertical-group">
+          <div class="horizontal-group">
+            <label for="root">Root: </label>
+            <select id="selectRootNote"> </select>
+            <select id="selectScale"> </select>
+          </div>
+          <div class="horizontal-group">
+            <label for="notes">Notes: </label>
+            <label id="notes">notes</label>
+          </div>
+          <div class="horizontal-group">
+            <label for="intervals">Intervals: </label>
+            <label id="intervals">intervals</label>
+          </div>
         </div>
       </div>
     </div>
@@ -53,12 +61,12 @@
 
       SCALES = {
         "major":            "1-2-3-4-5-6-7",
-        "minor":            "1-2-3b-4-5-6b-7b",
+        "minor":            "1-2-b3-4-5-b6-b7b",
         "major pentatonic": "1-2-3-5-6",
-        "minor pentatonic": "1-3b-4-5-7b",
-        "lydian":           "1-2-3-4#-5-6-7",
-        "dorian":           "1-2-3b-4-5-6-7b",
-        "blues":            "1-3b-4-5b-5-7b",
+        "minor pentatonic": "1-b3-4-5-b7",
+        "lydian":           "1-2-3-#4-5-6-7",
+        "dorian":           "1-2-b3-4-5-6-b7",
+        "blues":            "1-b3-4-b5-5-b7",
       };
       //A, C, D, E, and G
       //1-3b-4-5-7b
@@ -134,10 +142,14 @@
         _notes = [];
         _intervals = intervals.split("-");
         _intervals.forEach(function(interval) {
-          index = parseInt(interval.charAt(0));
-          note = notes[index-1];
-          if (interval.length > 1) {
-            modifier = interval.charAt(1);
+          if (interval.length == 1) {
+            index = parseInt(interval.charAt(0));
+            note = notes[index-1];
+            _notes.push(note);
+          } else if (interval.length > 1) {
+            index = parseInt(interval.charAt(1));
+            note = notes[index-1];
+            modifier = interval.charAt(0);
             if (modifier == "b") {
               note = flat(note);
             } else if (modifier == "#") {
@@ -145,8 +157,10 @@
             } else {
               alert("Unknown interval modifier")
             }
+            _notes.push(note);
+          } else {
+            alert("Empty interval")
           }
-          _notes.push(note);
         });
         console.log(JSON.stringify(_notes) + " <-- function select_by_intervals(" + JSON.stringify(intervals) + ", " + JSON.stringify(notes) + ")");
         return _notes;

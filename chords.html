@@ -2,7 +2,7 @@
 
 <html>
   <head>
-    <title>Fretboard Page</title>
+    <title>Guitar Chord Visualization</title>
     <meta name="viewport" content="initial-scale=1" />
     <script src="./fretboard/jquery.js"></script>
     <script src="./fretboard/fretboard.js"></script>
@@ -11,12 +11,13 @@
     <link rel="stylesheet" type="text/css" href="./styles.css" />
 
     <script src="./Triad.js"></script>
+    <h1>Guitar Chord Visualization</h1>
   </head>
 
   <body>
     <div class="container">
       <div class="my-fretboard-js"></div>
-
+      <br>
       <div class="my-controlpanel-js">
         <div class="horizontal-group">
           <label for="tuning">Tuning: </label>
@@ -29,12 +30,6 @@
           <select id="selectChordModification"> </select>
           <label id="notes">notes</label>
         </div>
-      </div>
-      <div class="my-info">
-        <label>Scale: </label>
-        <label id="scale">scale</label><br />
-        <label>Notes: </label>
-        <label id="allnotes">allnotes</label><br />
       </div>
     </div>
 
@@ -140,9 +135,13 @@
             var noteLetters = note.letter.split("/");
             noteLetters.forEach(function (letter) {
               if ($.inArray(letter, chord) >= 0) {
+                note_color = 'black';
+                if (root == letter) {
+                  note_color = 'red';
+                }
                 notes.push({
                   fret: note.fret,
-                  cssClass: "blue",
+                  cssClass: note_color,
                 });
               }
             });
