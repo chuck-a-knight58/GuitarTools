@@ -1,0 +1,19 @@
+ Volume in drive C is OS
+ Volume Serial Number is BCCA-C618
+
+ Directory of C:\Users\chuck\LocalData\DevArea\projects\GuitarTools
+
+11/23/2021  08:38 PM    <DIR>          .
+11/23/2021  08:38 PM    <DIR>          ..
+07/08/2021  06:22 PM            10,175 chords.html
+11/23/2021  08:38 PM                 0 foo
+05/28/2020  10:49 AM    <DIR>          fretboard
+06/24/2021  08:06 PM                45 README.md
+07/22/2021  07:32 PM            15,592 scales.html
+05/28/2020  10:49 AM             1,075 server.js
+07/08/2021  06:22 PM               158 start-chord-finder.bat
+07/08/2021  06:01 PM               953 styles.css
+05/28/2020  10:49 AM             1,192 test_triad.js
+05/28/2020  10:49 AM             5,849 Triad.js
+               9 File(s)         35,039 bytes
+               3 Dir(s)  799,535,833,088 bytes free
