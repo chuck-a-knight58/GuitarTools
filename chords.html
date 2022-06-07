@@ -123,7 +123,7 @@
         // Use the root node, steps and modification to determine the chord
         var steps = "WWHWWWH";
         var t = new Triad(root, steps);
-        chord = t[modification];
+        chord = t["_" + modification];
 
         // Determine which notes on the fretboard match the notes in our chord
         var notesToClick = [];

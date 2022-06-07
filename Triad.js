@@ -7,21 +7,39 @@ class Triad {
     return [
       "maj",
       "min",
-      "sus2",
-      "sus4",
-      "aug",
       "dim",
-      "major6",
-      "major7",
-      "dom7",
-      "min7",
-      "min7Flat5",
-      "dim7",
+      "dim7th",
+      "halfdim7th",
+      "aug",
+      "5th",
+      "7th",
+      "min7th",
+      "maj7th",
+      "minmaj7th",
+      "sus4",
+      "sus2",
+      "7thsus4",
+      "7thsus2",
+      "add2",
+      "add9",
+      "add4",
+      "6",
+      "min6",
+      "69",
+      "9th",
+      "min9",
       "maj9",
-      "dom9",
-      "dom11",
-      "dom13",
-      "majAdd9",
+      "11th",
+      "min11",
+      "maj11",
+      "13th",
+      "min13",
+      "maj13",
+      "7thSharp9th",
+      "7thFlat9th",
+      "7thSharp5th",
+      "7thFlat5",
+      "min7thFlat5",
     ];
   }
 
@@ -197,71 +215,144 @@ class Triad {
     return this._scale[12 - 7];
   }
 
-  get maj() {
+  // Chords
+  get _maj() {
     return [this.first, this.third, this.fifth];
   }
 
-  get min() {
+  get _min() {
     return [this.first, this.flat(this.third), this.fifth];
   }
 
-  get sus2() {
-    return [this.first, this.second, this.fifth];
-  }
-
-  get sus4() {
-    return [this.first, this.fourth, this.fifth];
-  }
-
-  get aug() {
-    return [this.first, this.third, this.sharp(this.fifth)];
-  }
-
-  get dim() {
+  get _dim() {
     return [this.first, this.flat(this.third), this.flat(this.fifth)];
   }
 
-  get major6() {
-    return [this.first, this.third, this.fifth, this.sixth];
-  }
-
-  get major7() {
-    return [this.first, this.third, this.fifth, this.seventh];
-  }
-
-  get dom7() {
-    return [this.first, this.third, this.fifth, this.flat(this.seventh)];
-  }
-
-  get min7() {
-    return [this.first, this.flat(this.third), this.fifth, this.flat(this.seventh)];
-  }
-
-  get min7Flat5() {
-    return [this.first, this.flat(this.third), this.flat(this.fifth), this.flat(this.seventh)];
-  }
-
-  get dim7() {
+  get _dim7th() {
     return [this.first, this.flat(this.third), this.flat(this.fifth), this.flat(this.flat(this.seventh))];
   }
 
-  get maj9() {
-    return [this.first, this.third, this.fifth, this.seventh, this.nineth];
+  get _halfdim7th() {
+    return [this.first, this.flat(this.third), this.flat(this.fifth), this.flat(this.flat(this.seventh))];
   }
 
-  get dom9() {
+  get _aug() {
+    return [this.first, this.third, this.sharp(this.fifth)];
+  }
+
+  get _5th() {
+    return [this.first, this.fifth];
+  }
+
+  get _7th() {
+    return [this.first, this.third, this.fifth, this.flat(this.seventh)];
+  }
+
+  get _min7th() {
+    return [this.first, this.flat(this.third), this.fifth, this.flat(this.seventh)];
+  }
+
+  get _maj7th() {
+    return [this.first, this.third, this.fifth, this.seventh];
+  }
+
+  get _minmaj7th() {
+    return [this.first, this.flat(this.third), this.fifth, this.seventh];
+  }
+
+  get _sus4() {
+    return [this.first, this.fourth, this.fifth];
+  }
+
+  get _sus2() {
+    return [this.first, this.second, this.fifth];
+  }
+
+  get _7thsus4() {
+    return [this.first, this.fourth, this.fifth, this.flat(this.seventh)];
+  }
+
+  get _7thsus2() {
+    return [this.first, this.second, this.fifth, this.flat(this.seventh)];
+  }
+
+  get _add2() {
+    return [this.first, this.second, this.third, this.fifth];
+  }
+
+  get _add9() {
+    return [this.first, this.third, this.fifth, this.nine];
+  }
+
+  get _add4() {
+    return [this.first, this.third, this.fourth, this.fifth];
+  }
+
+  get _6() {
+    return [this.first, this.third, this.fifth, this.sixth];
+  }
+
+  get _min6() {
+    return [this.first, this.flat(this.third), this.fifth, this.sixth];
+  }
+
+  get _69() {
+    return [this.first, this.third, this.fifth, this.sixth, this.ninth];
+  }
+
+  get _9th() {
     return [this.first, this.third, this.fifth, this.flat(this.seventh), this.nineth];
   }
 
-  get dom11() {
+  get _min9() {
+    return [this.first, this.flat(this.third), this.fifth, this.flat(this.seventh), this.nineth];
+  }
+
+  get _maj9() {
+    return [this.first, this.third, this.fifth, this.seventh, this.nineth];
+  }
+
+  get _11th() {
     return [this.first, this.third, this.fifth, this.flat(this.seventh), this.nineth, this.eleventh];
   }
 
-  get dom13() {
+  get _min11() {
+    return [this.first, this.flat(this.third), this.fifth, this.flat(this.seventh), this.nineth, this.eleventh];
+  }
+
+  get _maj11() {
+    return [this.first, this.third, this.fifth, this.seventh, this.nineth, this.eleventh];
+  }
+
+  get _13th() {
     return [this.first, this.third, this.fifth, this.flat(this.seventh), this.nineth, this.eleventh, this.thirteenth];
   }
 
-  get majAdd9() {
-    return [this.first, this.third, this.fifth, this.nineth];
+  get _min13() {
+    return [this.first, this.flat(this.third), this.fifth, this.flat(this.seventh), this.nineth, this.eleventh, this.thirteenth];
+  }
+
+  get _maj13() {
+    return [this.first, this.third, this.fifth, this.seventh, this.nineth, this.eleventh, this.thirteenth];
+  }
+
+  get _7thSharp9th() {
+    return [this.first, this.third, this.fifth, this.flat(this.seventh), this.sharp(this.nineth)];
+  }
+
+  get _7thFlat9th() {
+    return [this.first, this.third, this.fifth, this.flat(this.seventh), this.flat(this.nineth)];
+  }
+
+  get _7thSharp5th() {
+    return [this.first, this.third, this.sharp(this.fifth), this.flat(this.seventh)];
+  }
+
+  get _7thFlat5() {
+    return [this.first, this.third, this.flat(this.fifth), this.flat(this.seventh)];
+  }
+
+  get _min7thFlat5() {
+    return [this.first, this.flat(this.third), this.flat(this.fifth), this.flat(this.seventh)];
   }
 }
