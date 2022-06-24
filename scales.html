@@ -60,13 +60,32 @@
       MAJOR_PATTERN =  [ "W", "W", "H", "W", "W", "W" ];
 
       SCALES = {
-        "major":            "1-2-3-4-5-6-7",
-        "minor":            "1-2-b3-4-5-b6-b7",
-        "major pentatonic": "1-2-3-5-6",
-        "minor pentatonic": "1-b3-4-5-b7",
-        "lydian":           "1-2-3-#4-5-6-7",
-        "dorian":           "1-2-b3-4-5-6-b7",
-        "blues":            "1-b3-4-b5-5-b7",
+        "major": {           
+          "notes" : "1-2-3-4-5-6-7",
+          "header" : ["I", "ii", "iii", "IV", "V", "vi", "vii"],
+          "chords" : ["maj", "min", "min", "maj", "maj", "min", "dim"]},
+        "minor": {
+          "notes" : "1-2-b3-4-5-b6-b7",
+          "header" : ["I", "ii", "III", "iv", "V", "VI", "vii"],
+          "chords" : ["min", "dim", "aug", "min", "maj", "maj", "dim"]},
+        "major pentatonic": {
+          "notes" : "1-2-3-5-6",
+          "header" : ["I", "ii", "iii", "V", "vi"],
+          "chords" : ["maj", "sus2", "5", "sus4", "min"]},
+        "minor pentatonic": {
+          "notes" : "1-b3-4-5-b7",
+          "header" : ["i", "III", "iv", "V", "VII"],
+          "chords" : ["min", "maj", "min7", "min7", "5"]},
+        "lydian": {
+          "notes" : "1-2-3-#4-5-6-7",
+          "header" : ["I", "II", "iii", "iv", "V", "vi", "vii"],
+          "chords" : ["maj", "maj", "min", "dim", "maj", "min", "min"]},
+        "dorian": {
+          "notes" : "1-2-b3-4-5-6-b7",
+          "header" : ["i", "ii", "III", "IV", "v", "vi0", "VII"],
+          "chords" : ["min", "min", "maj", "maj", "min", "dim", "maj"]},
+        "minor blues": {
+          "notes" : "1-b3-4-b5-5-b7"},
       };
       //A, C, D, E, and G
       //1-3b-4-5-7b
@@ -192,7 +211,7 @@
       function getScaleNotes(root, scale) {
         return fix_spelling(
                  select_by_intervals(
-                   SCALES[scale],
+                   SCALES[scale]["notes"],
                    create_major_scale(
                      MAJOR_PATTERN, 
                      rebase_notes(
@@ -333,7 +352,7 @@
 
         // Update the notes making up the note_list
         $("#notes")[0].innerText = note_list.toString();
-        $("#intervals")[0].innerText = SCALES[scale];
+        $("#intervals")[0].innerText = SCALES[scale]["notes"];
 
         // Set the selected notes on the fretboard
         api.setClickedNotes(notesToClick);
