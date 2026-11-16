@@ -29,12 +29,16 @@
           <select id="selectRootNote"> </select>
           <select id="selectChordModification"> </select>
           <label id="notes">notes</label>
+          <button id="play-chord" class="play-chord">Play Chord</button>
         </div>
       </div>
     </div>
 
     <script type="text/javascript">
       // Reset the fretboard and set the header notes to grey
+      var currentChord = [];
+      var audioContext;
+
       function clear(api, tuning) {
         api.clearClickedNotes();
 
@@ -124,6 +128,7 @@
         var steps = "WWHWWWH";
         var t = new Triad(root, steps);
         chord = t["_" + modification];
+        currentChord = chord;
 
         // Determine which notes on the fretboard match the notes in our chord
         var notesToClick = [];
@@ -166,6 +171,102 @@
         // Set the info pannel
         $("#scale")[0].innerText = t.scale;
         $("#allnotes")[0].innerText = t.notes;
+      }
+
+      function normalizeNoteName(note) {
+        return note.split("/")[0];
+      }
+
+      function getSemitone(note) {
+        var normalized = normalizeNoteName(note);
+        var mapping = {
+          C: 0,
+          "C#": 1,
+          Db: 1,
+          D: 2,
+          "D#": 3,
+          Eb: 3,
+          E: 4,
+          F: 5,
+          "F#": 6,
+          Gb: 6,
+          G: 7,
+          "G#": 8,
+          Ab: 8,
+          A: 9,
+          "A#": 10,
+          Bb: 10,
+          B: 11,
+        };
+        return mapping[normalized];
+      }
+
+      function getFrequency(note, octave) {
+        var semitone = getSemitone(note);
+        if (semitone === undefined) {
+          return 440;
+        }
+        var midi = semitone + (octave + 1) * 12;
+        return 440 * Math.pow(2, (midi - 69) / 12);
+      }
+
+      function playNote(note, octave) {
+        if (!note) {
+          return;
+        }
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        var now = audioContext.currentTime;
+        var duration = 0.8;
+        var gain = audioContext.createGain();
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.2, now + 0.01);
+        gain.gain.linearRampToValueAtTime(0, now + duration);
+        gain.connect(audioContext.destination);
+
+        var oscillator = audioContext.createOscillator();
+        oscillator.type = "triangle";
+        oscillator.frequency.value = getFrequency(note, octave);
+        oscillator.connect(gain);
+        oscillator.start(now);
+        oscillator.stop(now + duration);
+      }
+
+      function playChord(notes, rootOctave) {
+        if (!notes || notes.length === 0) {
+          return;
+        }
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        var now = audioContext.currentTime;
+        var duration = 1.2;
+        var gain = audioContext.createGain();
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.2, now + 0.01);
+        gain.gain.linearRampToValueAtTime(0, now + duration);
+        gain.connect(audioContext.destination);
+
+        var rootSemitone = getSemitone(notes[0]);
+        notes.forEach(function (note) {
+          var semitone = getSemitone(note);
+          if (semitone === undefined) {
+            return;
+          }
+          var octave = rootOctave;
+          if (semitone <= rootSemitone) {
+            octave += 1;
+          }
+          var oscillator = audioContext.createOscillator();
+          oscillator.type = "triangle";
+          oscillator.frequency.value = getFrequency(note, octave);
+          oscillator.connect(gain);
+          oscillator.start(now);
+          oscillator.stop(now + duration);
+        });
       }
 
       // Initialize the app
@@ -299,6 +400,17 @@
           }
           updateFretboard(api, root, modification, tuning);
           console.log("Updated selectChordModification");
+        });
+
+        $("#play-chord").on("click", function () {
+          playChord(currentChord, 4);
+        });
+
+        $fretboard.on("click", ".note", function () {
+          var clickedNoteData = $(this).data("noteData");
+          if (clickedNoteData) {
+            playNote(clickedNoteData.letter, clickedNoteData.octave);
+          }
         });
 
         // Populate the root note selector

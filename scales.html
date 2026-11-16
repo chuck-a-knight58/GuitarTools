@@ -27,6 +27,7 @@
             <label for="root">Root: </label>
             <select id="selectRootNote"> </select>
             <select id="selectScale"> </select>
+            <button id="play-scale" class="play-scale">Play Scale</button>
           </div>
           <div class="horizontal-group">
             <label for="notes">Notes: </label>
@@ -41,6 +42,8 @@
     </div>
 
     <script type="text/javascript">
+      var audioContext;
+      var currentScale = [];
 
       NOTES = [
         ["C"],
@@ -207,6 +210,105 @@
         return _notes;
       }
 
+      function normalizeNoteName(note) {
+        return note.split("/")[0];
+      }
+
+      function getSemitone(note) {
+        var normalized = normalizeNoteName(note);
+        var mapping = {
+          C: 0,
+          "C#": 1,
+          Db: 1,
+          D: 2,
+          "D#": 3,
+          Eb: 3,
+          E: 4,
+          F: 5,
+          "F#": 6,
+          Gb: 6,
+          G: 7,
+          "G#": 8,
+          Ab: 8,
+          A: 9,
+          "A#": 10,
+          Bb: 10,
+          B: 11,
+        };
+        return mapping[normalized];
+      }
+
+      function getFrequency(note, octave) {
+        var semitone = getSemitone(note);
+        if (semitone === undefined) {
+          return 440;
+        }
+        var midi = semitone + (octave + 1) * 12;
+        return 440 * Math.pow(2, (midi - 69) / 12);
+      }
+
+      function playNote(note, octave) {
+        if (!note) {
+          return;
+        }
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        var now = audioContext.currentTime;
+        var duration = 0.8;
+        var gain = audioContext.createGain();
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.2, now + 0.01);
+        gain.gain.linearRampToValueAtTime(0, now + duration);
+        gain.connect(audioContext.destination);
+
+        var oscillator = audioContext.createOscillator();
+        oscillator.type = "triangle";
+        oscillator.frequency.value = getFrequency(note, octave);
+        oscillator.connect(gain);
+        oscillator.start(now);
+        oscillator.stop(now + duration);
+      }
+
+      function playScale(notes, rootOctave) {
+        if (!notes || notes.length === 0) {
+          return;
+        }
+        if (!audioContext) {
+          audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        var staggerDuration = 0.2;
+        var noteDuration = 0.6;
+        var rootSemitone = getSemitone(notes[0]);
+        
+        notes.forEach(function (note, index) {
+          var semitone = getSemitone(note);
+          if (semitone === undefined) {
+            return;
+          }
+          var octave = rootOctave;
+          if (semitone <= rootSemitone) {
+            octave += 1;
+          }
+          
+          var startTime = audioContext.currentTime + (index * staggerDuration);
+          var gain = audioContext.createGain();
+          gain.gain.setValueAtTime(0, startTime);
+          gain.gain.linearRampToValueAtTime(0.2, startTime + 0.01);
+          gain.gain.linearRampToValueAtTime(0, startTime + noteDuration);
+          gain.connect(audioContext.destination);
+
+          var oscillator = audioContext.createOscillator();
+          oscillator.type = "triangle";
+          oscillator.frequency.value = getFrequency(note, octave);
+          oscillator.connect(gain);
+          oscillator.start(startTime);
+          oscillator.stop(startTime + noteDuration);
+        });
+      }
+
       // Get the notes of the specifed rooted scale type
       function getScaleNotes(root, scale) {
         return fix_spelling(
@@ -353,6 +455,7 @@
         // Update the notes making up the note_list
         $("#notes")[0].innerText = note_list.toString();
         $("#intervals")[0].innerText = SCALES[scale]["notes"];
+        currentScale = note_list;
 
         // Set the selected notes on the fretboard
         api.setClickedNotes(notesToClick);
@@ -489,6 +592,17 @@
           }
           updateFretboard(api, root, scale, tuning);
           console.log("Updated selectScale");
+        });
+
+        $("#play-scale").on("click", function () {
+          playScale(currentScale, 4);
+        });
+
+        $fretboard.on("click", ".note", function () {
+          var clickedNoteData = $(this).data("noteData");
+          if (clickedNoteData) {
+            playNote(clickedNoteData.letter, clickedNoteData.octave);
+          }
         });
 
         // Populate the root note selector
